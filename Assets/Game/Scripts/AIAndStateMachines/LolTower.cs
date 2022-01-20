@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using DG.Tweening;
 
 public enum TowerStates
 {
@@ -21,6 +22,9 @@ public class LolTower : MonoBehaviour
     private TeamPlayer currentTargetPlayer;
 
     private float towerRange => SettingsManager.GameSettings.TowerRange;
+
+
+    [SerializeField] private Bullet bulletPrefab;
 
     private static Collider[] overlapResults = new Collider[100];
 
@@ -55,6 +59,7 @@ public class LolTower : MonoBehaviour
     private IEnumerator GetStateRoutine()
     {
         IEnumerator result = null;
+        
         switch (currentState)
         {
             case TowerStates.SeekTarget:
@@ -78,6 +83,8 @@ public class LolTower : MonoBehaviour
         {
             var stateRoutine = GetStateRoutine();
 
+            
+
             yield return stateRoutine;
         }
     }
@@ -85,7 +92,6 @@ public class LolTower : MonoBehaviour
     private IEnumerator SeekTarget()
     {
         //State Enter
-
         while (currentState == TowerStates.SeekTarget)
         {
             //State Loop
@@ -119,12 +125,24 @@ public class LolTower : MonoBehaviour
         //State Enter
         float timer = 0f;
         float attackCooldown = 1f;
+        bool isAttacking = false;
         while (currentState == TowerStates.AttackMinion)
         {
             timer += Time.deltaTime;
 
+            if (!isAttacking)
+            {
+                isAttacking = true;
+                Bullet bullet = Instantiate(bulletPrefab, towerTop.transform.position, Quaternion.identity);
+                bullet.Shoot(currentTargetMinion.transform);
+                
+            }
+            
+
             if (timer >= attackCooldown)
             {
+                isAttacking = false;
+
                 if (currentTargetMinion.GetHit())
                 {
                     currentTargetMinion = null;
@@ -133,13 +151,14 @@ public class LolTower : MonoBehaviour
                 }
                 timer -= attackCooldown;
             }
-
+            
             var sqrDistanceToTarget = (currentTargetMinion.transform.position - transform.position).sqrMagnitude;
+
             if (sqrDistanceToTarget > towerRange * towerRange)
             {
-                currentTargetMinion = null;
-                currentState = TowerStates.SeekTarget;
-                continue;
+                //currentTargetMinion = null;
+                //currentState = TowerStates.SeekTarget;
+                //continue;
             }
 
             //State Loop

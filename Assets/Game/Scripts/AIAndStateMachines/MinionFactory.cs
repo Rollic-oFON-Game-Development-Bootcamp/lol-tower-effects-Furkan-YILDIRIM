@@ -18,9 +18,9 @@ public class MinionFactory : MonoBehaviour
     {
         while (true)
         {
-            yield return new WaitForSeconds(minionSpawnCooldown);
             var minion = Instantiate(minionPrefab);
             minion.transform.position = transform.position;
+            yield return new WaitForSeconds(minionSpawnCooldown);
         }
     }
 }
